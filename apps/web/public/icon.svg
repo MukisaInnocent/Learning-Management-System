@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="96" fill="#2563eb"/>
+  <!-- Graduation cap -->
+  <path d="M256 140 L400 210 L256 280 L112 210 Z" fill="white" opacity="0.95"/>
+  <path d="M320 248 L320 330 C320 330 292 365 256 365 C220 365 192 330 192 330 L192 248 L256 278 L320 248 Z" fill="white" opacity="0.85"/>
+  <rect x="390" y="205" width="14" height="70" rx="7" fill="white" opacity="0.7"/>
+  <circle cx="397" cy="285" r="16" fill="white" opacity="0.9"/>
+</svg>

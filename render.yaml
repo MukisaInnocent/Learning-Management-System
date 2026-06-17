@@ -1,0 +1,47 @@
+services:
+  # ─── NestJS API ───────────────────────────────────────────────────────────────
+  - type: web
+    name: edu-api
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: apps/api
+    buildCommand: npm install && npm run build
+    startCommand: node dist/main
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false          # set in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true  # auto-generated secure secret
+      - key: FRONTEND_URL
+        sync: false          # e.g. https://edu-web.onrender.com
+      - key: PORT
+        value: 4000
+
+  # ─── Next.js Web ──────────────────────────────────────────────────────────────
+  - type: web
+    name: edu-web
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: apps/web
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false          # e.g. https://edu-api.onrender.com/api/v1
+      - key: PORT
+        value: 3000
+
+# ─── PostgreSQL (managed DB) ──────────────────────────────────────────────────
+# Uncomment to provision a Render Postgres database automatically:
+# databases:
+#   - name: edu-db
+#     databaseName: edu_platform
+#     user: edu_admin
+#     plan: free
