@@ -28,7 +28,10 @@ export class ParentsController {
 
   @Patch('profile')
   @Roles(Role.PARENT)
-  updateProfile(@CurrentUser() user: User, @Body() dto: any) {
+  updateProfile(
+    @CurrentUser() user: User,
+    @Body() dto: { phone?: string; address?: string; occupation?: string },
+  ) {
     return this.parentsService.upsertProfile(user.id, dto);
   }
 }

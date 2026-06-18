@@ -56,7 +56,21 @@ export class QuestionBankController {
     Role.EXAMINER,
     Role.CONTENT_CREATOR,
   )
-  create(@Body() dto: any, @CurrentUser() user: User) {
+  create(
+    @Body()
+    dto: {
+      text: string;
+      type?: QuestionType;
+      difficulty?: Difficulty;
+      topic?: string;
+      explanation?: string;
+      marks?: number;
+      subjectId?: string;
+      levelId?: string;
+      options?: { text: string; isCorrect: boolean }[];
+    },
+    @CurrentUser() user: User,
+  ) {
     return this.qbService.create(user.organizationId, user.id, dto);
   }
 

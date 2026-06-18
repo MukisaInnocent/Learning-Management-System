@@ -37,7 +37,18 @@ export class StudentsController {
   }
 
   @Patch('profile')
-  updateMyProfile(@CurrentUser() user: User, @Body() dto: any) {
+  updateMyProfile(
+    @CurrentUser() user: User,
+    @Body()
+    dto: {
+      dateOfBirth?: string;
+      gender?: string;
+      address?: string;
+      phone?: string;
+      admissionNo?: string;
+      levelId?: string;
+    },
+  ) {
     return this.studentsService.upsertProfile(user.id, dto);
   }
 

@@ -52,7 +52,18 @@ export class GradebookController {
 
   @Post('grades')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  addGrade(@Body() dto: any) {
+  addGrade(
+    @Body()
+    dto: {
+      studentId: string;
+      courseId: string;
+      categoryId: string;
+      termId: string;
+      score: number;
+      maxScore: number;
+      notes?: string;
+    },
+  ) {
     return this.gradebookService.addGrade(dto);
   }
 

@@ -1,32 +1,57 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { BookOpen, PlayCircle, FileText, ExternalLink, CheckCircle, ChevronRight } from 'lucide-react';
+import { BookOpen, PlayCircle, FileText, ExternalLink, ChevronRight } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import api from '../../../../../lib/api';
 import { Button } from '../../../../../components/ui/Button';
 import { Badge } from '../../../../../components/ui/Badge';
 
-const lessonIcons: Record<string, any> = {
+interface Lesson {
+  id: string;
+  title: string;
+  type: 'VIDEO' | 'TEXT' | 'DOCUMENT' | 'LINK';
+  isPreview?: boolean;
+  durationMinutes?: number;
+}
+
+interface Module {
+  id: string;
+  title: string;
+  description?: string;
+  lessons: Lesson[];
+}
+
+interface Course {
+  id: string;
+  title: string;
+  description?: string;
+  academicLevel?: { name: string };
+  createdBy?: { firstName: string; lastName: string };
+  modules?: Module[];
+  _count?: { enrollments: number };
+}
+
+const lessonIcons: Record<string, LucideIcon> = {
   VIDEO: PlayCircle, DOCUMENT: FileText, TEXT: BookOpen, LINK: ExternalLink,
 };
 
 export default function CourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>();
-  const router = useRouter();
-  const [course, setCourse] = useState<any>(null);
+  const [course, setCourse] = useState<Course | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   const [enrolled, setEnrolled] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.get(`/courses/${courseId}`).then((r) => {
-      setCourse(r.data);
+      setCourse(r.data as Course);
       setLoading(false);
     });
     api.get('/courses/enrollments/mine').then((r) => {
-      const ids = r.data.map((e: any) => e.courseId);
+      const ids = (r.data as { courseId: string }[]).map((e) => e.courseId);
       setEnrolled(ids.includes(courseId));
     });
   }, [courseId]);
@@ -44,13 +69,13 @@ export default function CourseDetailPage() {
   if (loading) return <div className="text-gray-500">Loading course…</div>;
   if (!course) return <div className="text-red-500">Course not found</div>;
 
-  const totalLessons = course.modules?.flatMap((m: any) => m.lessons).length ?? 0;
+  const totalLessons = course.modules?.flatMap((m) => m.lessons).length ?? 0;
 
   return (
     <div className="max-w-4xl">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          {course.academicLevel && <Badge color="blue" >{course.academicLevel.name}</Badge>}
+          {course.academicLevel && <Badge color="blue">{course.academicLevel.name}</Badge>}
           <h1 className="mt-2 text-2xl font-bold text-gray-900">{course.title}</h1>
           {course.description && <p className="mt-1 text-gray-500">{course.description}</p>}
           <p className="mt-2 text-sm text-gray-400">
@@ -67,7 +92,7 @@ export default function CourseDetailPage() {
       </div>
 
       <div className="space-y-4">
-        {course.modules?.map((mod: any, mi: number) => (
+        {course.modules?.map((mod, mi) => (
           <div key={mod.id} className="rounded-xl border border-gray-200 bg-white overflow-hidden">
             <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
               <p className="font-semibold text-gray-900">
@@ -76,7 +101,7 @@ export default function CourseDetailPage() {
               {mod.description && <p className="text-sm text-gray-500">{mod.description}</p>}
             </div>
             <div>
-              {mod.lessons?.map((lesson: any, li: number) => {
+              {mod.lessons?.map((lesson, li) => {
                 const Icon = lessonIcons[lesson.type] ?? BookOpen;
                 return (
                   <Link

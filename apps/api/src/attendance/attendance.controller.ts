@@ -7,7 +7,7 @@
   Body,
   UseGuards,
 } from '@nestjs/common';
-import { Role, type User } from '@prisma/client';
+import { AttendanceStatus, Role, type User } from '@prisma/client';
 import { AttendanceService } from './attendance.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -21,7 +21,16 @@ export class AttendanceController {
 
   @Post('mark')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  mark(@Body('records') records: any[]) {
+  mark(
+    @Body('records')
+    records: {
+      studentId: string;
+      termId: string;
+      date: string;
+      status: AttendanceStatus;
+      notes?: string;
+    }[],
+  ) {
     return this.attendanceService.markAttendance(records);
   }
 

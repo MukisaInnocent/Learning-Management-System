@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  BookOpen, LayoutDashboard, Users, Settings,
+  BookOpen, LayoutDashboard, Users,
   GraduationCap, ClipboardList, BarChart2, Building2, LogOut,
-  Bell, BookMarked, FileText, Award, DollarSign, UserCheck,
+  BookMarked, FileText, Award, DollarSign, UserCheck,
   HelpCircle, PenTool, Users2,
 } from 'lucide-react';
 import { logout, type User } from '../../lib/auth';

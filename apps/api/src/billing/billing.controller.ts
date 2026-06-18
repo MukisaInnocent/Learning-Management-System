@@ -8,7 +8,13 @@
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { InvoiceStatus, Role, type User } from '@prisma/client';
+import {
+  BillingType,
+  InvoiceStatus,
+  PaymentMethod,
+  Role,
+  type User,
+} from '@prisma/client';
 import { BillingService } from './billing.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -33,7 +39,16 @@ export class BillingController {
 
   @Post('fee-structures')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  createFeeStructure(@Body() dto: any, @CurrentUser() user: User) {
+  createFeeStructure(
+    @Body()
+    dto: {
+      name: string;
+      billingType: BillingType;
+      amount: number;
+      description?: string;
+    },
+    @CurrentUser() user: User,
+  ) {
     return this.billingService.createFeeStructure(user.organizationId, dto);
   }
 
@@ -59,7 +74,17 @@ export class BillingController {
 
   @Post('invoices')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  createInvoice(@Body() dto: any, @CurrentUser() user: User) {
+  createInvoice(
+    @Body()
+    dto: {
+      studentId?: string;
+      amount: number;
+      dueDate?: string;
+      notes?: string;
+      items: { description: string; quantity: number; amount: number }[];
+    },
+    @CurrentUser() user: User,
+  ) {
     return this.billingService.createInvoice(user.organizationId, dto);
   }
 
@@ -71,7 +96,16 @@ export class BillingController {
 
   @Post('invoices/:id/payments')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  recordPayment(@Param('id') id: string, @Body() dto: any) {
+  recordPayment(
+    @Param('id') id: string,
+    @Body()
+    dto: {
+      amount: number;
+      method: PaymentMethod;
+      referenceNumber?: string;
+      notes?: string;
+    },
+  ) {
     return this.billingService.recordPayment(id, dto);
   }
 }

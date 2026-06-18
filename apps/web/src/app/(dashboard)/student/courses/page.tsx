@@ -4,13 +4,23 @@ import { BookOpen, Users } from 'lucide-react';
 import { Card } from '../../../../components/ui/Card';
 import { Badge } from '../../../../components/ui/Badge';
 
+interface Course {
+  id: string;
+  title: string;
+  description?: string;
+  coverUrl?: string;
+  status: string;
+  academicLevel?: { name: string };
+  _count?: { modules: number; enrollments: number };
+}
+
 async function getCourses(token: string) {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1'}/courses`,
     { headers: { Cookie: `accessToken=${token}` }, cache: 'no-store' },
   );
   if (!res.ok) return [];
-  return res.json();
+  return res.json() as Promise<Course[]>;
 }
 
 export default async function StudentCoursesPage() {
@@ -32,11 +42,12 @@ export default async function StudentCoursesPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((course: any) => (
+          {courses.map((course) => (
             <Link key={course.id} href={`/student/courses/${course.id}`}>
               <div className="rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md hover:border-blue-200 transition-all overflow-hidden">
-                <div className="h-36 bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center">
+                <div className="h-36 bg-linear-to-br from-blue-400 to-indigo-600 flex items-center justify-center">
                   {course.coverUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={course.coverUrl} alt={course.title} className="h-full w-full object-cover" />
                   ) : (
                     <BookOpen className="h-12 w-12 text-white opacity-60" />

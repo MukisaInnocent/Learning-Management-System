@@ -6,22 +6,50 @@ import { CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 import api from '../../../../../../../lib/api';
 import { Button } from '../../../../../../../components/ui/Button';
 
+interface QuizOption {
+  id: string;
+  text: string;
+}
+
+interface QuizQuestion {
+  id: string;
+  text: string;
+  options?: QuizOption[];
+}
+
+interface Quiz {
+  id: string;
+  title: string;
+  description?: string;
+  passingScore: number;
+  maxAttempts: number;
+  questions?: QuizQuestion[];
+}
+
+interface QuizAttempt {
+  id: string;
+}
+
+interface QuizResult {
+  score: number;
+}
+
 export default function QuizPage() {
   const { courseId, quizId } = useParams<{ courseId: string; quizId: string }>();
   const router = useRouter();
-  const [quiz, setQuiz] = useState<any>(null);
-  const [attempt, setAttempt] = useState<any>(null);
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
+  const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<QuizResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    api.get(`/quizzes/${quizId}`).then((r) => setQuiz(r.data));
+    api.get(`/quizzes/${quizId}`).then((r) => setQuiz(r.data as Quiz));
   }, [quizId]);
 
   const startQuiz = async () => {
     const res = await api.post(`/quizzes/${quizId}/attempts/start`);
-    setAttempt(res.data);
+    setAttempt(res.data as QuizAttempt);
   };
 
   const selectAnswer = (questionId: string, optionId: string) => {
@@ -38,7 +66,7 @@ export default function QuizPage() {
         })),
       };
       const res = await api.post(`/quizzes/attempts/${attempt.id}/submit`, payload);
-      setResult(res.data);
+      setResult(res.data as QuizResult);
     } finally {
       setSubmitting(false);
     }
@@ -88,13 +116,13 @@ export default function QuizPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {quiz.questions?.map((q: any, qi: number) => (
+          {quiz.questions?.map((q, qi) => (
             <div key={q.id} className="rounded-xl border border-gray-200 bg-white p-6">
               <p className="mb-4 font-semibold text-gray-900">
                 {qi + 1}. {q.text}
               </p>
               <div className="space-y-2">
-                {q.options?.map((opt: any) => {
+                {q.options?.map((opt) => {
                   const selected = answers[q.id] === opt.id;
                   return (
                     <button

@@ -42,7 +42,13 @@ export class AssignmentsController {
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
   create(
     @Param('courseId') courseId: string,
-    @Body() dto: any,
+    @Body()
+    dto: {
+      title: string;
+      instructions?: string;
+      dueDate?: string;
+      totalMarks?: number;
+    },
     @CurrentUser() user: User,
   ) {
     return this.assignmentsService.create(courseId, user.id, dto);
@@ -64,7 +70,7 @@ export class AssignmentsController {
   @Roles(Role.STUDENT)
   submit(
     @Param('assignmentId') assignmentId: string,
-    @Body() dto: any,
+    @Body() dto: { answerText?: string; fileUrl?: string },
     @CurrentUser() user: User,
   ) {
     return this.assignmentsService.submit(assignmentId, user.id, dto);
