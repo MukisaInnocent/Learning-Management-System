@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomBytes } from 'crypto';
 
@@ -18,7 +22,8 @@ export class CertificatesService {
     const existing = await this.prisma.certificate.findUnique({
       where: { studentId_courseId: { studentId, courseId } },
     });
-    if (existing) throw new ConflictException('Certificate already issued for this course');
+    if (existing)
+      throw new ConflictException('Certificate already issued for this course');
 
     return this.prisma.certificate.create({
       data: {
@@ -37,7 +42,9 @@ export class CertificatesService {
   async getMyCertificates(studentId: string) {
     return this.prisma.certificate.findMany({
       where: { studentId },
-      include: { course: { select: { id: true, title: true, academicLevel: true } } },
+      include: {
+        course: { select: { id: true, title: true, academicLevel: true } },
+      },
       orderBy: { issuedAt: 'desc' },
     });
   }
@@ -50,7 +57,8 @@ export class CertificatesService {
         course: { select: { title: true } },
       },
     });
-    if (!cert) throw new NotFoundException('Certificate not found or invalid code');
+    if (!cert)
+      throw new NotFoundException('Certificate not found or invalid code');
     return { valid: true, certificate: cert };
   }
 

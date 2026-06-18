@@ -5,18 +5,32 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ProgressService {
   constructor(private prisma: PrismaService) {}
 
-  async markLessonProgress(lessonId: string, userId: string, watchedSeconds = 0) {
+  async markLessonProgress(
+    lessonId: string,
+    userId: string,
+    watchedSeconds = 0,
+  ) {
     const progress = await this.prisma.lessonProgress.upsert({
       where: { userId_lessonId: { userId, lessonId } },
       update: { watchedSeconds, completed: true, completedAt: new Date() },
-      create: { userId, lessonId, watchedSeconds, completed: true, completedAt: new Date() },
+      create: {
+        userId,
+        lessonId,
+        watchedSeconds,
+        completed: true,
+        completedAt: new Date(),
+      },
     });
 
     await this.recalculateCourseProgress(lessonId, userId);
     return progress;
   }
 
-  async updateWatchProgress(lessonId: string, userId: string, watchedSeconds: number) {
+  async updateWatchProgress(
+    lessonId: string,
+    userId: string,
+    watchedSeconds: number,
+  ) {
     return this.prisma.lessonProgress.upsert({
       where: { userId_lessonId: { userId, lessonId } },
       update: { watchedSeconds },
@@ -44,12 +58,17 @@ export class ProgressService {
 
     if (!enrollment) return null;
 
-    const allLessonIds = enrollment.course.modules.flatMap((m) => m.lessons.map((l) => l.id));
+    const allLessonIds = enrollment.course.modules.flatMap((m) =>
+      m.lessons.map((l) => l.id),
+    );
     const completedLessons = await this.prisma.lessonProgress.count({
       where: { userId, lessonId: { in: allLessonIds }, completed: true },
     });
 
-    const progress = allLessonIds.length > 0 ? (completedLessons / allLessonIds.length) * 100 : 0;
+    const progress =
+      allLessonIds.length > 0
+        ? (completedLessons / allLessonIds.length) * 100
+        : 0;
 
     return {
       courseId,
@@ -66,7 +85,9 @@ export class ProgressService {
       include: { course: { select: { id: true, title: true } } },
     });
 
-    const quizAttempts = await this.prisma.quizAttempt.count({ where: { userId } });
+    const quizAttempts = await this.prisma.quizAttempt.count({
+      where: { userId },
+    });
     const completedAttempts = await this.prisma.quizAttempt.count({
       where: { userId, status: 'COMPLETED' },
     });
@@ -87,17 +108,28 @@ export class ProgressService {
   private async recalculateCourseProgress(lessonId: string, userId: string) {
     const lesson = await this.prisma.lesson.findUnique({
       where: { id: lessonId },
-      include: { module: { include: { course: { include: { modules: { include: { lessons: true } } } } } } },
+      include: {
+        module: {
+          include: {
+            course: { include: { modules: { include: { lessons: true } } } },
+          },
+        },
+      },
     });
     if (!lesson) return;
 
     const course = lesson.module.course;
-    const allLessonIds = course.modules.flatMap((m) => m.lessons.map((l) => l.id));
+    const allLessonIds = course.modules.flatMap((m) =>
+      m.lessons.map((l) => l.id),
+    );
     const completedCount = await this.prisma.lessonProgress.count({
       where: { userId, lessonId: { in: allLessonIds }, completed: true },
     });
 
-    const progress = allLessonIds.length > 0 ? (completedCount / allLessonIds.length) * 100 : 0;
+    const progress =
+      allLessonIds.length > 0
+        ? (completedCount / allLessonIds.length) * 100
+        : 0;
 
     await this.prisma.courseEnrollment.updateMany({
       where: { userId, courseId: course.id },

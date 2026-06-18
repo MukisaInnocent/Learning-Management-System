@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 
@@ -7,7 +11,9 @@ export class OrganizationsService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateOrganizationDto) {
-    const existing = await this.prisma.organization.findUnique({ where: { slug: dto.slug } });
+    const existing = await this.prisma.organization.findUnique({
+      where: { slug: dto.slug },
+    });
     if (existing) throw new ConflictException('Slug already in use');
     return this.prisma.organization.create({ data: dto });
   }
@@ -40,8 +46,13 @@ export class OrganizationsService {
       include: {
         user: {
           select: {
-            id: true, email: true, firstName: true, lastName: true,
-            role: true, avatarUrl: true, createdAt: true,
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+            avatarUrl: true,
+            createdAt: true,
           },
         },
       },
@@ -49,7 +60,9 @@ export class OrganizationsService {
   }
 
   async removeMember(organizationId: string, userId: string) {
-    await this.prisma.organizationMember.deleteMany({ where: { organizationId, userId } });
+    await this.prisma.organizationMember.deleteMany({
+      where: { organizationId, userId },
+    });
     return { message: 'Member removed' };
   }
 }

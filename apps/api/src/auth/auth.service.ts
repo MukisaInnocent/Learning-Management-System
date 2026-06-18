@@ -1,4 +1,4 @@
-import {
+﻿import {
   Injectable,
   UnauthorizedException,
   ConflictException,
@@ -19,7 +19,9 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
     if (existing) throw new ConflictException('Email already in use');
 
     let organization = await this.prisma.organization.findUnique({
@@ -28,7 +30,9 @@ export class AuthService {
 
     if (!organization) {
       if (!dto.organizationName || !dto.organizationSlug) {
-        throw new BadRequestException('organizationName and organizationSlug required for new org');
+        throw new BadRequestException(
+          'organizationName and organizationSlug required for new org',
+        );
       }
       organization = await this.prisma.organization.create({
         data: {
@@ -54,10 +58,19 @@ export class AuthService {
     });
 
     await this.prisma.organizationMember.create({
-      data: { userId: user.id, organizationId: organization.id, role: dto.role },
+      data: {
+        userId: user.id,
+        organizationId: organization.id,
+        role: dto.role,
+      },
     });
 
-    const tokens = await this.generateTokens(user.id, user.email, user.role, user.organizationId);
+    const tokens = this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+      user.organizationId,
+    );
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     const { passwordHash: _, ...userSafe } = user;
@@ -75,7 +88,12 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!valid) throw new UnauthorizedException('Invalid credentials');
 
-    const tokens = await this.generateTokens(user.id, user.email, user.role, user.organizationId);
+    const tokens = this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+      user.organizationId,
+    );
     await this.saveRefreshToken(user.id, tokens.refreshToken);
 
     const { passwordHash: _, ...userSafe } = user;
@@ -92,9 +110,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    await this.prisma.refreshToken.update({ where: { id: stored.id }, data: { revoked: true } });
+    await this.prisma.refreshToken.update({
+      where: { id: stored.id },
+      data: { revoked: true },
+    });
 
-    const tokens = await this.generateTokens(
+    const tokens = this.generateTokens(
       stored.user.id,
       stored.user.email,
       stored.user.role,
@@ -122,12 +143,23 @@ export class AuthService {
     return userSafe;
   }
 
-  private async generateTokens(userId: string, email: string, role: Role, organizationId: string) {
+  private generateTokens(
+    userId: string,
+    email: string,
+    role: Role,
+    organizationId: string,
+  ) {
     const payload = { sub: userId, email, role, organizationId };
     const secret = process.env.JWT_SECRET || 'jwt-secret-change-in-production';
 
-    const accessToken = this.jwtService.sign(payload, { secret, expiresIn: '15m' });
-    const refreshToken = this.jwtService.sign(payload, { secret, expiresIn: '7d' });
+    const accessToken = this.jwtService.sign(payload, {
+      secret,
+      expiresIn: '15m',
+    });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret,
+      expiresIn: '7d',
+    });
 
     return { accessToken, refreshToken };
   }
@@ -135,6 +167,8 @@ export class AuthService {
   private async saveRefreshToken(userId: string, token: string) {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
-    await this.prisma.refreshToken.create({ data: { token, userId, expiresAt } });
+    await this.prisma.refreshToken.create({
+      data: { token, userId, expiresAt },
+    });
   }
 }

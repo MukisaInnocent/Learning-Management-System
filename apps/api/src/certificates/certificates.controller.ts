@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+﻿import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Role, type User } from '@prisma/client';
 import { CertificatesService } from './certificates.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -13,7 +13,7 @@ export class CertificatesController {
 
   @Get('mine')
   @Roles(Role.STUDENT)
-  getMyCertificates(@CurrentUser() user: any) {
+  getMyCertificates(@CurrentUser() user: User) {
     return this.certificatesService.getMyCertificates(user.id);
   }
 
@@ -24,13 +24,16 @@ export class CertificatesController {
 
   @Get()
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  findAll(@CurrentUser() user: any) {
+  findAll(@CurrentUser() user: User) {
     return this.certificatesService.findAll(user.organizationId);
   }
 
   @Post()
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
   issue(@Body() dto: { studentId: string; courseId: string }) {
-    return this.certificatesService.issueCertificate(dto.studentId, dto.courseId);
+    return this.certificatesService.issueCertificate(
+      dto.studentId,
+      dto.courseId,
+    );
   }
 }

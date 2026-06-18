@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateQuizDto, SubmitAttemptDto } from './dto/quiz.dto';
 import { AttemptStatus, QuestionType } from '@prisma/client';
@@ -52,7 +56,7 @@ export class QuizzesService {
       ...quiz,
       questions: quiz.questions.map((q) => ({
         ...q,
-        options: q.options.map(({ isCorrect: _, ...opt }) => opt),
+        options: q.options.map(({ isCorrect: _isCorrect, ...opt }) => opt),
         explanation: undefined,
       })),
     };
@@ -67,7 +71,9 @@ export class QuizzesService {
     });
 
     if (attemptsCount >= quiz.maxAttempts) {
-      throw new BadRequestException(`Maximum ${quiz.maxAttempts} attempts reached`);
+      throw new BadRequestException(
+        `Maximum ${quiz.maxAttempts} attempts reached`,
+      );
     }
 
     const existing = await this.prisma.quizAttempt.findFirst({
@@ -80,13 +86,20 @@ export class QuizzesService {
     });
   }
 
-  async submitAttempt(attemptId: string, userId: string, dto: SubmitAttemptDto) {
+  async submitAttempt(
+    attemptId: string,
+    userId: string,
+    dto: SubmitAttemptDto,
+  ) {
     const attempt = await this.prisma.quizAttempt.findUnique({
       where: { id: attemptId },
-      include: { quiz: { include: { questions: { include: { options: true } } } } },
+      include: {
+        quiz: { include: { questions: { include: { options: true } } } },
+      },
     });
 
-    if (!attempt || attempt.userId !== userId) throw new NotFoundException('Attempt not found');
+    if (!attempt || attempt.userId !== userId)
+      throw new NotFoundException('Attempt not found');
     if (attempt.status !== AttemptStatus.IN_PROGRESS) {
       throw new BadRequestException('Attempt already completed');
     }
@@ -94,34 +107,43 @@ export class QuizzesService {
     let totalPoints = 0;
     let earnedPoints = 0;
 
-    const answerData = dto.answers.map((answer) => {
-      const question = attempt.quiz.questions.find((q) => q.id === answer.questionId);
-      if (!question) return null;
+    const answerData = dto.answers
+      .map((answer) => {
+        const question = attempt.quiz.questions.find(
+          (q) => q.id === answer.questionId,
+        );
+        if (!question) return null;
 
-      totalPoints += question.points;
-      let isCorrect = false;
-      let pointsEarned = 0;
+        totalPoints += question.points;
+        let isCorrect = false;
+        let pointsEarned = 0;
 
-      if (question.type === QuestionType.MULTIPLE_CHOICE || question.type === QuestionType.TRUE_FALSE) {
-        const selectedOption = question.options.find((o) => o.id === answer.selectedOptionId);
-        isCorrect = selectedOption?.isCorrect ?? false;
-        pointsEarned = isCorrect ? question.points : 0;
-      } else if (question.type === QuestionType.SHORT_ANSWER) {
-        isCorrect = false;
-        pointsEarned = 0;
-      }
+        if (
+          question.type === QuestionType.MULTIPLE_CHOICE ||
+          question.type === QuestionType.TRUE_FALSE
+        ) {
+          const selectedOption = question.options.find(
+            (o) => o.id === answer.selectedOptionId,
+          );
+          isCorrect = selectedOption?.isCorrect ?? false;
+          pointsEarned = isCorrect ? question.points : 0;
+        } else if (question.type === QuestionType.SHORT_ANSWER) {
+          isCorrect = false;
+          pointsEarned = 0;
+        }
 
-      earnedPoints += pointsEarned;
+        earnedPoints += pointsEarned;
 
-      return {
-        attemptId,
-        questionId: answer.questionId,
-        selectedOptionId: answer.selectedOptionId,
-        textAnswer: answer.textAnswer,
-        isCorrect,
-        pointsEarned,
-      };
-    }).filter(Boolean);
+        return {
+          attemptId,
+          questionId: answer.questionId,
+          selectedOptionId: answer.selectedOptionId,
+          textAnswer: answer.textAnswer,
+          isCorrect,
+          pointsEarned,
+        };
+      })
+      .filter(Boolean);
 
     await this.prisma.attemptAnswer.createMany({ data: answerData as any[] });
 

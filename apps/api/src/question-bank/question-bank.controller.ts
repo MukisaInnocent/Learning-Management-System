@@ -1,5 +1,14 @@
-import { Controller, Get, Post, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
-import { Difficulty, QuestionType, Role } from '@prisma/client';
+﻿import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { Difficulty, QuestionType, Role, type User } from '@prisma/client';
 import { QuestionBankService } from './question-bank.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -12,15 +21,26 @@ export class QuestionBankController {
   constructor(private qbService: QuestionBankService) {}
 
   @Get()
-  @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER, Role.EXAMINER, Role.CONTENT_CREATOR)
+  @Roles(
+    Role.SUPER_ADMIN,
+    Role.ORG_ADMIN,
+    Role.TEACHER,
+    Role.EXAMINER,
+    Role.CONTENT_CREATOR,
+  )
   findAll(
-    @CurrentUser() user: any,
+    @CurrentUser() user: User,
     @Query('subjectId') subjectId?: string,
     @Query('levelId') levelId?: string,
     @Query('difficulty') difficulty?: Difficulty,
     @Query('type') type?: QuestionType,
   ) {
-    return this.qbService.findAll(user.organizationId, { subjectId, levelId, difficulty, type });
+    return this.qbService.findAll(user.organizationId, {
+      subjectId,
+      levelId,
+      difficulty,
+      type,
+    });
   }
 
   @Get(':id')
@@ -29,8 +49,14 @@ export class QuestionBankController {
   }
 
   @Post()
-  @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER, Role.EXAMINER, Role.CONTENT_CREATOR)
-  create(@Body() dto: any, @CurrentUser() user: any) {
+  @Roles(
+    Role.SUPER_ADMIN,
+    Role.ORG_ADMIN,
+    Role.TEACHER,
+    Role.EXAMINER,
+    Role.CONTENT_CREATOR,
+  )
+  create(@Body() dto: any, @CurrentUser() user: User) {
     return this.qbService.create(user.organizationId, user.id, dto);
   }
 

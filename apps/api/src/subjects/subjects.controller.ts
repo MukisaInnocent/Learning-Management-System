@@ -1,5 +1,14 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+﻿import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
+import { Role, type User } from '@prisma/client';
 import { SubjectsService } from './subjects.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -22,7 +31,7 @@ export class SubjectsController {
   constructor(private subjectsService: SubjectsService) {}
 
   @Get()
-  findAll(@CurrentUser() user: any) {
+  findAll(@CurrentUser() user: User) {
     return this.subjectsService.findAll(user.organizationId);
   }
 
@@ -33,13 +42,13 @@ export class SubjectsController {
 
   @Post()
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  create(@Body() dto: CreateSubjectDto, @CurrentUser() user: any) {
+  create(@Body() dto: CreateSubjectDto, @CurrentUser() user: User) {
     return this.subjectsService.create(dto, user.organizationId);
   }
 
   @Post('seed')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  seed(@CurrentUser() user: any) {
+  seed(@CurrentUser() user: User) {
     return this.subjectsService.seedDefaultSubjects(user.organizationId);
   }
 

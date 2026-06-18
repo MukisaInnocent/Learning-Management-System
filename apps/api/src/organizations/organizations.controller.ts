@@ -1,5 +1,14 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+﻿import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
+import { Role, type User } from '@prisma/client';
 import { OrganizationsService } from './organizations.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -25,7 +34,7 @@ export class OrganizationsController {
   }
 
   @Get('mine')
-  findMine(@CurrentUser() user: any) {
+  findMine(@CurrentUser() user: User) {
     return this.orgsService.findOne(user.organizationId);
   }
 

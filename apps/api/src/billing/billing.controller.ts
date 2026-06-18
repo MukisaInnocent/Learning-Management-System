@@ -1,5 +1,14 @@
-import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
-import { InvoiceStatus, Role } from '@prisma/client';
+﻿import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { InvoiceStatus, Role, type User } from '@prisma/client';
 import { BillingService } from './billing.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -13,30 +22,33 @@ export class BillingController {
 
   @Get('summary')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  getSummary(@CurrentUser() user: any) {
+  getSummary(@CurrentUser() user: User) {
     return this.billingService.getFinancialSummary(user.organizationId);
   }
 
   @Get('fee-structures')
-  getFeeStructures(@CurrentUser() user: any) {
+  getFeeStructures(@CurrentUser() user: User) {
     return this.billingService.getFeeStructures(user.organizationId);
   }
 
   @Post('fee-structures')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  createFeeStructure(@Body() dto: any, @CurrentUser() user: any) {
+  createFeeStructure(@Body() dto: any, @CurrentUser() user: User) {
     return this.billingService.createFeeStructure(user.organizationId, dto);
   }
 
   @Get('invoices')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  findInvoices(@CurrentUser() user: any, @Query('status') status?: InvoiceStatus) {
+  findInvoices(
+    @CurrentUser() user: User,
+    @Query('status') status?: InvoiceStatus,
+  ) {
     return this.billingService.findInvoices(user.organizationId, status);
   }
 
   @Get('invoices/mine')
   @Roles(Role.STUDENT)
-  getMyInvoices(@CurrentUser() user: any) {
+  getMyInvoices(@CurrentUser() user: User) {
     return this.billingService.getMyInvoices(user.id);
   }
 
@@ -47,7 +59,7 @@ export class BillingController {
 
   @Post('invoices')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  createInvoice(@Body() dto: any, @CurrentUser() user: any) {
+  createInvoice(@Body() dto: any, @CurrentUser() user: User) {
     return this.billingService.createInvoice(user.organizationId, dto);
   }
 

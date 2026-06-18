@@ -1,4 +1,11 @@
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsBoolean, IsUrl } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsBoolean,
+} from 'class-validator';
 import { ContentStatus, LessonType } from '@prisma/client';
 
 export class CreateCourseDto {

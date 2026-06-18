@@ -6,7 +6,15 @@ import { PrismaService } from '../prisma/prisma.service';
 export class QuestionBankService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll(organizationId: string, filters?: { subjectId?: string; levelId?: string; difficulty?: Difficulty; type?: QuestionType }) {
+  async findAll(
+    organizationId: string,
+    filters?: {
+      subjectId?: string;
+      levelId?: string;
+      difficulty?: Difficulty;
+      type?: QuestionType;
+    },
+  ) {
     return this.prisma.questionBank.findMany({
       where: { organizationId, ...filters },
       include: {
@@ -22,23 +30,31 @@ export class QuestionBankService {
   async findOne(id: string) {
     const q = await this.prisma.questionBank.findUnique({
       where: { id },
-      include: { options: { orderBy: { order: 'asc' } }, subject: true, level: true },
+      include: {
+        options: { orderBy: { order: 'asc' } },
+        subject: true,
+        level: true,
+      },
     });
     if (!q) throw new NotFoundException('Question not found');
     return q;
   }
 
-  async create(organizationId: string, createdById: string, dto: {
-    text: string;
-    type?: QuestionType;
-    difficulty?: Difficulty;
-    topic?: string;
-    explanation?: string;
-    marks?: number;
-    subjectId?: string;
-    levelId?: string;
-    options?: { text: string; isCorrect: boolean }[];
-  }) {
+  async create(
+    organizationId: string,
+    createdById: string,
+    dto: {
+      text: string;
+      type?: QuestionType;
+      difficulty?: Difficulty;
+      topic?: string;
+      explanation?: string;
+      marks?: number;
+      subjectId?: string;
+      levelId?: string;
+      options?: { text: string; isCorrect: boolean }[];
+    },
+  ) {
     return this.prisma.questionBank.create({
       data: {
         organizationId,

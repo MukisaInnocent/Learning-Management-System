@@ -1,5 +1,5 @@
-import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+﻿import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Role, type User } from '@prisma/client';
 import { ParentsService } from './parents.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -13,19 +13,22 @@ export class ParentsController {
 
   @Get('children')
   @Roles(Role.PARENT)
-  getMyChildren(@CurrentUser() user: any) {
+  getMyChildren(@CurrentUser() user: User) {
     return this.parentsService.getMyChildren(user.id);
   }
 
   @Get('children/:studentId')
   @Roles(Role.PARENT)
-  getChildDetail(@CurrentUser() user: any, @Param('studentId') studentId: string) {
+  getChildDetail(
+    @CurrentUser() user: User,
+    @Param('studentId') studentId: string,
+  ) {
     return this.parentsService.getChildDetail(user.id, studentId);
   }
 
   @Patch('profile')
   @Roles(Role.PARENT)
-  updateProfile(@CurrentUser() user: any, @Body() dto: any) {
+  updateProfile(@CurrentUser() user: User, @Body() dto: any) {
     return this.parentsService.upsertProfile(user.id, dto);
   }
 }

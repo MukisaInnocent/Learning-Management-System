@@ -15,15 +15,30 @@ export class NotesService {
   async findAll(userId: string) {
     return this.prisma.note.findMany({
       where: { userId },
-      include: { lesson: { select: { id: true, title: true, module: { select: { course: { select: { id: true, title: true } } } } } } },
+      include: {
+        lesson: {
+          select: {
+            id: true,
+            title: true,
+            module: {
+              select: { course: { select: { id: true, title: true } } },
+            },
+          },
+        },
+      },
       orderBy: { updatedAt: 'desc' },
     });
   }
 
   async upsert(lessonId: string, userId: string, content: string) {
-    const existing = await this.prisma.note.findFirst({ where: { lessonId, userId } });
+    const existing = await this.prisma.note.findFirst({
+      where: { lessonId, userId },
+    });
     if (existing) {
-      return this.prisma.note.update({ where: { id: existing.id }, data: { content } });
+      return this.prisma.note.update({
+        where: { id: existing.id },
+        data: { content },
+      });
     }
     return this.prisma.note.create({ data: { lessonId, userId, content } });
   }

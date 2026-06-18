@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -20,7 +24,9 @@ export class SubjectsService {
 
   async create(dto: { name: string; code: string }, organizationId: string) {
     const existing = await this.prisma.subject.findUnique({
-      where: { organizationId_code: { organizationId, code: dto.code.toUpperCase() } },
+      where: {
+        organizationId_code: { organizationId, code: dto.code.toUpperCase() },
+      },
     });
     if (existing) throw new ConflictException('Subject code already exists');
     return this.prisma.subject.create({

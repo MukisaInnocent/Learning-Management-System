@@ -11,8 +11,12 @@ export class BookmarksService {
       include: {
         lesson: {
           select: {
-            id: true, title: true, type: true,
-            module: { select: { course: { select: { id: true, title: true } } } },
+            id: true,
+            title: true,
+            type: true,
+            module: {
+              select: { course: { select: { id: true, title: true } } },
+            },
           },
         },
       },

@@ -9,7 +9,11 @@ export class StudentsService {
     return this.prisma.user.findMany({
       where: { organizationId, role: 'STUDENT' },
       select: {
-        id: true, firstName: true, lastName: true, email: true, avatarUrl: true,
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        avatarUrl: true,
         studentProfile: { include: { level: true } },
       },
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
@@ -20,32 +24,63 @@ export class StudentsService {
     const student = await this.prisma.user.findFirst({
       where: { id, role: 'STUDENT' },
       include: {
-        studentProfile: { include: { level: true, parents: { include: { parentProfile: { include: { user: { select: { firstName: true, lastName: true, email: true } } } } } } } },
-        enrollments: { include: { course: { select: { id: true, title: true } } } },
+        studentProfile: {
+          include: {
+            level: true,
+            parents: {
+              include: {
+                parentProfile: {
+                  include: {
+                    user: {
+                      select: { firstName: true, lastName: true, email: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        enrollments: {
+          include: { course: { select: { id: true, title: true } } },
+        },
       },
     });
     if (!student) throw new NotFoundException('Student not found');
     return student;
   }
 
-  async upsertProfile(userId: string, dto: {
-    dateOfBirth?: string;
-    gender?: string;
-    address?: string;
-    phone?: string;
-    admissionNo?: string;
-    levelId?: string;
-  }) {
-    const data: any = { ...dto, dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined };
+  async upsertProfile(
+    userId: string,
+    dto: {
+      dateOfBirth?: string;
+      gender?: string;
+      address?: string;
+      phone?: string;
+      admissionNo?: string;
+      levelId?: string;
+    },
+  ) {
+    const profileData = {
+      gender: dto.gender,
+      address: dto.address,
+      phone: dto.phone,
+      admissionNo: dto.admissionNo,
+      levelId: dto.levelId,
+      dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+    };
     return this.prisma.studentProfile.upsert({
       where: { userId },
-      update: data,
-      create: { userId, ...data },
+      update: profileData,
+      create: { userId, ...profileData },
       include: { level: true },
     });
   }
 
-  async linkParent(studentUserId: string, parentUserId: string, relationship = 'Parent') {
+  async linkParent(
+    studentUserId: string,
+    parentUserId: string,
+    relationship = 'Parent',
+  ) {
     const studentProfile = await this.prisma.studentProfile.upsert({
       where: { userId: studentUserId },
       update: {},
@@ -57,9 +92,18 @@ export class StudentsService {
       create: { userId: parentUserId },
     });
     return this.prisma.studentParent.upsert({
-      where: { studentProfileId_parentProfileId: { studentProfileId: studentProfile.id, parentProfileId: parentProfile.id } },
+      where: {
+        studentProfileId_parentProfileId: {
+          studentProfileId: studentProfile.id,
+          parentProfileId: parentProfile.id,
+        },
+      },
       update: { relationship },
-      create: { studentProfileId: studentProfile.id, parentProfileId: parentProfile.id, relationship },
+      create: {
+        studentProfileId: studentProfile.id,
+        parentProfileId: parentProfile.id,
+        relationship,
+      },
     });
   }
 }

@@ -14,7 +14,9 @@ export class NotificationsService {
   }
 
   async unreadCount(userId: string) {
-    const count = await this.prisma.notification.count({ where: { userId, read: false } });
+    const count = await this.prisma.notification.count({
+      where: { userId, read: false },
+    });
     return { count };
   }
 
@@ -32,7 +34,15 @@ export class NotificationsService {
     });
   }
 
-  async create(userId: string, title: string, message: string, type?: string, link?: string) {
-    return this.prisma.notification.create({ data: { userId, title, message, type, link } });
+  async create(
+    userId: string,
+    title: string,
+    message: string,
+    type?: string,
+    link?: string,
+  ) {
+    return this.prisma.notification.create({
+      data: { userId, title, message, type, link },
+    });
   }
 }

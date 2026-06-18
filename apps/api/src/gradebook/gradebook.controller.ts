@@ -1,5 +1,13 @@
-import { Controller, Get, Post, Delete, Param, Body, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+﻿import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
+import { Role, type User } from '@prisma/client';
 import { GradebookService } from './gradebook.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -12,13 +20,16 @@ export class GradebookController {
   constructor(private gradebookService: GradebookService) {}
 
   @Get('categories')
-  getCategories(@CurrentUser() user: any) {
+  getCategories(@CurrentUser() user: User) {
     return this.gradebookService.getCategories(user.organizationId);
   }
 
   @Post('categories')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  createCategory(@CurrentUser() user: any, @Body() dto: { name: string; weight: number }) {
+  createCategory(
+    @CurrentUser() user: User,
+    @Body() dto: { name: string; weight: number },
+  ) {
     return this.gradebookService.createCategory(user.organizationId, dto);
   }
 
@@ -29,13 +40,13 @@ export class GradebookController {
   }
 
   @Get('scales')
-  getScales(@CurrentUser() user: any) {
+  getScales(@CurrentUser() user: User) {
     return this.gradebookService.getScales(user.organizationId);
   }
 
   @Post('scales/seed')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  seedScales(@CurrentUser() user: any) {
+  seedScales(@CurrentUser() user: User) {
     return this.gradebookService.seedDefaultScales(user.organizationId);
   }
 
@@ -47,19 +58,22 @@ export class GradebookController {
 
   @Get('courses/:courseId/terms/:termId')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  getGradesForCourse(@Param('courseId') courseId: string, @Param('termId') termId: string) {
+  getGradesForCourse(
+    @Param('courseId') courseId: string,
+    @Param('termId') termId: string,
+  ) {
     return this.gradebookService.getGradesForCourse(courseId, termId);
   }
 
   @Get('my-grades')
   @Roles(Role.STUDENT)
-  getMyGrades(@CurrentUser() user: any) {
+  getMyGrades(@CurrentUser() user: User) {
     return this.gradebookService.getMyGrades(user.id);
   }
 
   @Get('results/me')
   @Roles(Role.STUDENT)
-  getMyResults(@CurrentUser() user: any) {
+  getMyResults(@CurrentUser() user: User) {
     return this.gradebookService.getResults(user.id);
   }
 
@@ -71,7 +85,15 @@ export class GradebookController {
 
   @Post('results/compute')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  computeResult(@Body() dto: { studentId: string; courseId: string; termId: string }, @CurrentUser() user: any) {
-    return this.gradebookService.computeAndSaveResult(dto.studentId, dto.courseId, dto.termId, user.organizationId);
+  computeResult(
+    @Body() dto: { studentId: string; courseId: string; termId: string },
+    @CurrentUser() user: User,
+  ) {
+    return this.gradebookService.computeAndSaveResult(
+      dto.studentId,
+      dto.courseId,
+      dto.termId,
+      user.organizationId,
+    );
   }
 }

@@ -2,7 +2,11 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const cookieParser = require('cookie-parser');
+const cookieParser = require('cookie-parser') as () => (
+  req: unknown,
+  res: unknown,
+  next: () => void,
+) => void;
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -30,4 +34,4 @@ async function bootstrap() {
   console.log(`API running on http://localhost:${port}/api/v1`);
 }
 
-bootstrap();
+void bootstrap();

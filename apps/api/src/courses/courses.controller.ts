@@ -1,10 +1,22 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+﻿import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
+import { Role, type User } from '@prisma/client';
 import { CoursesService } from './courses.service';
 import {
-  CreateCourseDto, UpdateCourseDto,
-  CreateModuleDto, UpdateModuleDto,
-  CreateLessonDto, UpdateLessonDto,
+  CreateCourseDto,
+  UpdateCourseDto,
+  CreateModuleDto,
+  UpdateModuleDto,
+  CreateLessonDto,
+  UpdateLessonDto,
 } from './dto/course.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -20,17 +32,17 @@ export class CoursesController {
 
   @Post()
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  create(@Body() dto: CreateCourseDto, @CurrentUser() user: any) {
+  create(@Body() dto: CreateCourseDto, @CurrentUser() user: User) {
     return this.coursesService.create(dto, user.id, user.organizationId);
   }
 
   @Get()
-  findAll(@CurrentUser() user: any) {
+  findAll(@CurrentUser() user: User) {
     return this.coursesService.findAll(user.organizationId, user.id, user.role);
   }
 
   @Get('enrollments/mine')
-  getMyEnrollments(@CurrentUser() user: any) {
+  getMyEnrollments(@CurrentUser() user: User) {
     return this.coursesService.getMyEnrollments(user.id);
   }
 
@@ -41,7 +53,11 @@ export class CoursesController {
 
   @Patch(':id')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  update(@Param('id') id: string, @Body() dto: UpdateCourseDto, @CurrentUser() user: any) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateCourseDto,
+    @CurrentUser() user: User,
+  ) {
     return this.coursesService.update(id, dto, user.id, user.role);
   }
 
@@ -53,7 +69,7 @@ export class CoursesController {
 
   @Post(':id/enroll')
   @Roles(Role.STUDENT)
-  enroll(@Param('id') id: string, @CurrentUser() user: any) {
+  enroll(@Param('id') id: string, @CurrentUser() user: User) {
     return this.coursesService.enroll(id, user.id);
   }
 
@@ -61,13 +77,19 @@ export class CoursesController {
 
   @Post(':courseId/modules')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  createModule(@Param('courseId') courseId: string, @Body() dto: CreateModuleDto) {
+  createModule(
+    @Param('courseId') courseId: string,
+    @Body() dto: CreateModuleDto,
+  ) {
     return this.coursesService.createModule(courseId, dto);
   }
 
   @Patch('modules/:moduleId')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  updateModule(@Param('moduleId') moduleId: string, @Body() dto: UpdateModuleDto) {
+  updateModule(
+    @Param('moduleId') moduleId: string,
+    @Body() dto: UpdateModuleDto,
+  ) {
     return this.coursesService.updateModule(moduleId, dto);
   }
 
@@ -81,7 +103,10 @@ export class CoursesController {
 
   @Post('modules/:moduleId/lessons')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  createLesson(@Param('moduleId') moduleId: string, @Body() dto: CreateLessonDto) {
+  createLesson(
+    @Param('moduleId') moduleId: string,
+    @Body() dto: CreateLessonDto,
+  ) {
     return this.coursesService.createLesson(moduleId, dto);
   }
 
@@ -92,7 +117,10 @@ export class CoursesController {
 
   @Patch('lessons/:lessonId')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  updateLesson(@Param('lessonId') lessonId: string, @Body() dto: UpdateLessonDto) {
+  updateLesson(
+    @Param('lessonId') lessonId: string,
+    @Body() dto: UpdateLessonDto,
+  ) {
     return this.coursesService.updateLesson(lessonId, dto);
   }
 

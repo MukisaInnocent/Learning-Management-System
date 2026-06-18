@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+﻿import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Role, type User } from '@prisma/client';
 import { QuizzesService } from './quizzes.service';
 import { CreateQuizDto, SubmitAttemptDto } from './dto/quiz.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -19,7 +19,7 @@ export class QuizzesController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: User) {
     if (user.role === Role.STUDENT) {
       return this.quizzesService.findForStudent(id);
     }
@@ -28,7 +28,7 @@ export class QuizzesController {
 
   @Post(':id/attempts/start')
   @Roles(Role.STUDENT)
-  startAttempt(@Param('id') id: string, @CurrentUser() user: any) {
+  startAttempt(@Param('id') id: string, @CurrentUser() user: User) {
     return this.quizzesService.startAttempt(id, user.id);
   }
 
@@ -36,7 +36,7 @@ export class QuizzesController {
   @Roles(Role.STUDENT)
   submitAttempt(
     @Param('attemptId') attemptId: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: User,
     @Body() dto: SubmitAttemptDto,
   ) {
     return this.quizzesService.submitAttempt(attemptId, user.id, dto);
@@ -44,7 +44,7 @@ export class QuizzesController {
 
   @Get(':id/attempts/mine')
   @Roles(Role.STUDENT)
-  getMyAttempts(@Param('id') id: string, @CurrentUser() user: any) {
+  getMyAttempts(@Param('id') id: string, @CurrentUser() user: User) {
     return this.quizzesService.getMyAttempts(id, user.id);
   }
 }

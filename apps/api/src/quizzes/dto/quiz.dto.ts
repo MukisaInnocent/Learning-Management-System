@@ -1,4 +1,13 @@
-import { IsArray, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { QuestionType } from '@prisma/client';
 
@@ -14,7 +23,10 @@ export class CreateQuestionDto {
   @IsNumber() @IsOptional() points?: number;
   @IsInt() order: number;
   @IsString() @IsOptional() explanation?: string;
-  @IsArray() @ValidateNested({ each: true }) @Type(() => CreateOptionDto) options: CreateOptionDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateOptionDto)
+  options: CreateOptionDto[];
 }
 
 export class CreateQuizDto {
@@ -25,7 +37,11 @@ export class CreateQuizDto {
   @IsInt() @IsOptional() timeLimit?: number;
   @IsNumber() @IsOptional() passingScore?: number;
   @IsInt() @IsOptional() maxAttempts?: number;
-  @IsArray() @IsOptional() @ValidateNested({ each: true }) @Type(() => CreateQuestionDto) questions?: CreateQuestionDto[];
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateQuestionDto)
+  questions?: CreateQuestionDto[];
 }
 
 export class SubmitAnswerDto {
@@ -35,6 +51,8 @@ export class SubmitAnswerDto {
 }
 
 export class SubmitAttemptDto {
-  @IsArray() @ValidateNested({ each: true }) @Type(() => SubmitAnswerDto)
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SubmitAnswerDto)
   answers: SubmitAnswerDto[];
 }

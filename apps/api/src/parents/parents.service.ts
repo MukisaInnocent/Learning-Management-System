@@ -13,7 +13,15 @@ export class ParentsService {
           include: {
             studentProfile: {
               include: {
-                user: { select: { id: true, firstName: true, lastName: true, email: true, avatarUrl: true } },
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    avatarUrl: true,
+                  },
+                },
                 level: true,
               },
             },
@@ -29,7 +37,9 @@ export class ParentsService {
   }
 
   async getChildDetail(parentUserId: string, studentUserId: string) {
-    const parentProfile = await this.prisma.parentProfile.findUnique({ where: { userId: parentUserId } });
+    const parentProfile = await this.prisma.parentProfile.findUnique({
+      where: { userId: parentUserId },
+    });
     if (!parentProfile) throw new NotFoundException('Parent profile not found');
 
     const student = await this.prisma.user.findFirst({
@@ -37,9 +47,15 @@ export class ParentsService {
       include: {
         studentProfile: { include: { level: true } },
         enrollments: {
-          include: { course: { select: { id: true, title: true, academicLevel: true } } },
+          include: {
+            course: { select: { id: true, title: true, academicLevel: true } },
+          },
         },
-        quizAttempts: { where: { status: 'COMPLETED' }, orderBy: { completedAt: 'desc' }, take: 10 },
+        quizAttempts: {
+          where: { status: 'COMPLETED' },
+          orderBy: { completedAt: 'desc' },
+          take: 10,
+        },
         lessonProgress: { where: { completed: true } },
       },
     });
@@ -47,14 +63,22 @@ export class ParentsService {
 
     const reportCards = await this.prisma.reportCard.findMany({
       where: { studentId: studentUserId, published: true },
-      include: { term: { include: { academicYear: true } }, remarks: { include: { teacher: { select: { firstName: true, lastName: true } } } } },
+      include: {
+        term: { include: { academicYear: true } },
+        remarks: {
+          include: { teacher: { select: { firstName: true, lastName: true } } },
+        },
+      },
       orderBy: { generatedAt: 'desc' },
     });
 
     return { ...student, reportCards };
   }
 
-  async upsertProfile(userId: string, dto: { phone?: string; address?: string; occupation?: string }) {
+  async upsertProfile(
+    userId: string,
+    dto: { phone?: string; address?: string; occupation?: string },
+  ) {
     return this.prisma.parentProfile.upsert({
       where: { userId },
       update: dto,

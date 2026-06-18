@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -8,11 +8,19 @@ export class GradebookService {
   // ─── Grade Categories ─────────────────────────────────────────────────────
 
   async getCategories(organizationId: string) {
-    return this.prisma.gradeCategory.findMany({ where: { organizationId }, orderBy: { name: 'asc' } });
+    return this.prisma.gradeCategory.findMany({
+      where: { organizationId },
+      orderBy: { name: 'asc' },
+    });
   }
 
-  async createCategory(organizationId: string, dto: { name: string; weight: number }) {
-    return this.prisma.gradeCategory.create({ data: { ...dto, organizationId } });
+  async createCategory(
+    organizationId: string,
+    dto: { name: string; weight: number },
+  ) {
+    return this.prisma.gradeCategory.create({
+      data: { ...dto, organizationId },
+    });
   }
 
   async deleteCategory(id: string) {
@@ -22,12 +30,25 @@ export class GradebookService {
   // ─── Grade Scales ─────────────────────────────────────────────────────────
 
   async getScales(organizationId: string) {
-    return this.prisma.gradeScale.findMany({ where: { organizationId }, orderBy: { minScore: 'desc' } });
+    return this.prisma.gradeScale.findMany({
+      where: { organizationId },
+      orderBy: { minScore: 'desc' },
+    });
   }
 
-  async upsertScales(organizationId: string, scales: { minScore: number; maxScore: number; grade: string; label?: string }[]) {
+  async upsertScales(
+    organizationId: string,
+    scales: {
+      minScore: number;
+      maxScore: number;
+      grade: string;
+      label?: string;
+    }[],
+  ) {
     await this.prisma.gradeScale.deleteMany({ where: { organizationId } });
-    return this.prisma.gradeScale.createMany({ data: scales.map((s) => ({ ...s, organizationId })) });
+    return this.prisma.gradeScale.createMany({
+      data: scales.map((s) => ({ ...s, organizationId })),
+    });
   }
 
   async seedDefaultScales(organizationId: string) {
@@ -39,20 +60,33 @@ export class GradebookService {
       { minScore: 0, maxScore: 49.9, grade: 'F', label: 'Fail' },
     ];
     await this.prisma.gradeScale.deleteMany({ where: { organizationId } });
-    await this.prisma.gradeScale.createMany({ data: defaults.map((d) => ({ ...d, organizationId })) });
+    await this.prisma.gradeScale.createMany({
+      data: defaults.map((d) => ({ ...d, organizationId })),
+    });
     return this.getScales(organizationId);
   }
 
   // ─── Student Grades ───────────────────────────────────────────────────────
 
-  async addGrade(dto: { studentId: string; courseId: string; categoryId: string; termId: string; score: number; maxScore: number; notes?: string }) {
+  async addGrade(dto: {
+    studentId: string;
+    courseId: string;
+    categoryId: string;
+    termId: string;
+    score: number;
+    maxScore: number;
+    notes?: string;
+  }) {
     return this.prisma.studentGrade.create({ data: dto });
   }
 
   async getGradesForCourse(courseId: string, termId: string) {
     return this.prisma.studentGrade.findMany({
       where: { courseId, termId },
-      include: { student: { select: { id: true, firstName: true, lastName: true } }, category: true },
+      include: {
+        student: { select: { id: true, firstName: true, lastName: true } },
+        category: true,
+      },
       orderBy: [{ student: { lastName: 'asc' } }],
     });
   }
@@ -60,7 +94,11 @@ export class GradebookService {
   async getMyGrades(studentId: string) {
     return this.prisma.studentGrade.findMany({
       where: { studentId },
-      include: { course: { select: { id: true, title: true } }, category: true, term: true },
+      include: {
+        course: { select: { id: true, title: true } },
+        category: true,
+        term: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -70,12 +108,20 @@ export class GradebookService {
   async getResults(studentId: string) {
     return this.prisma.courseResult.findMany({
       where: { studentId },
-      include: { course: { select: { id: true, title: true } }, term: { include: { academicYear: true } } },
+      include: {
+        course: { select: { id: true, title: true } },
+        term: { include: { academicYear: true } },
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async computeAndSaveResult(studentId: string, courseId: string, termId: string, organizationId: string) {
+  async computeAndSaveResult(
+    studentId: string,
+    courseId: string,
+    termId: string,
+    organizationId: string,
+  ) {
     const grades = await this.prisma.studentGrade.findMany({
       where: { studentId, courseId, termId },
       include: { category: true },
@@ -88,12 +134,17 @@ export class GradebookService {
       weight: g.category.weight,
     }));
     const totalWeight = weighted.reduce((a, b) => a + b.weight, 0);
-    const percentage = totalWeight > 0
-      ? weighted.reduce((a, b) => a + b.pct * (b.weight / totalWeight), 0)
-      : weighted.reduce((a, b) => a + b.pct, 0) / weighted.length;
+    const percentage =
+      totalWeight > 0
+        ? weighted.reduce((a, b) => a + b.pct * (b.weight / totalWeight), 0)
+        : weighted.reduce((a, b) => a + b.pct, 0) / weighted.length;
 
     const scale = await this.prisma.gradeScale.findFirst({
-      where: { organizationId, minScore: { lte: percentage }, maxScore: { gte: percentage } },
+      where: {
+        organizationId,
+        minScore: { lte: percentage },
+        maxScore: { gte: percentage },
+      },
     });
 
     return this.prisma.courseResult.upsert({

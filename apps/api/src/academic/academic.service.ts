@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateAcademicLevelDto,
@@ -73,7 +73,10 @@ export class AcademicService {
       where: { organizationId },
       data: { isCurrent: false },
     });
-    return this.prisma.academicYear.update({ where: { id }, data: { isCurrent: true } });
+    return this.prisma.academicYear.update({
+      where: { id },
+      data: { isCurrent: true },
+    });
   }
 
   // ─── Terms ─────────────────────────────────────────────────────────────────

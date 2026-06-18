@@ -10,8 +10,14 @@ export class UsersService {
     return this.prisma.user.findMany({
       where: { organizationId },
       select: {
-        id: true, email: true, firstName: true, lastName: true,
-        role: true, avatarUrl: true, createdAt: true, organizationId: true,
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        avatarUrl: true,
+        createdAt: true,
+        organizationId: true,
       },
     });
   }
@@ -20,8 +26,14 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { id },
       select: {
-        id: true, email: true, firstName: true, lastName: true,
-        role: true, avatarUrl: true, createdAt: true, organizationId: true,
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        avatarUrl: true,
+        createdAt: true,
+        organizationId: true,
         organization: true,
       },
     });
@@ -36,8 +48,14 @@ export class UsersService {
       where: { id },
       data: dto,
       select: {
-        id: true, email: true, firstName: true, lastName: true,
-        role: true, avatarUrl: true, createdAt: true, organizationId: true,
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        avatarUrl: true,
+        createdAt: true,
+        organizationId: true,
       },
     });
   }

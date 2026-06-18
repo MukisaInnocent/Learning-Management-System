@@ -1,5 +1,13 @@
-import { Controller, Get, Post, Body, Param, Patch, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+﻿import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
+import { Role, type User } from '@prisma/client';
 import { AcademicService } from './academic.service';
 import {
   CreateAcademicLevelDto,
@@ -34,7 +42,7 @@ export class AcademicController {
   }
 
   @Get('years')
-  findYears(@CurrentUser() user: any) {
+  findYears(@CurrentUser() user: User) {
     return this.academicService.findYears(user.organizationId);
   }
 
@@ -46,7 +54,7 @@ export class AcademicController {
 
   @Patch('years/:id/current')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  setCurrentYear(@Param('id') id: string, @CurrentUser() user: any) {
+  setCurrentYear(@Param('id') id: string, @CurrentUser() user: User) {
     return this.academicService.setCurrentYear(id, user.organizationId);
   }
 

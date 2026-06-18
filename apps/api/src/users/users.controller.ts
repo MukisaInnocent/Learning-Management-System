@@ -1,5 +1,13 @@
-import { Controller, Get, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+﻿import {
+  Controller,
+  Get,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
+import { Role, type User } from '@prisma/client';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -14,12 +22,12 @@ export class UsersController {
 
   @Get()
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  findAll(@CurrentUser() user: any) {
+  findAll(@CurrentUser() user: User) {
     return this.usersService.findAll(user.organizationId);
   }
 
   @Get('profile')
-  getProfile(@CurrentUser() user: any) {
+  getProfile(@CurrentUser() user: User) {
     return this.usersService.findOne(user.id);
   }
 
@@ -30,7 +38,7 @@ export class UsersController {
   }
 
   @Patch('profile')
-  updateProfile(@CurrentUser() user: any, @Body() dto: UpdateUserDto) {
+  updateProfile(@CurrentUser() user: User, @Body() dto: UpdateUserDto) {
     return this.usersService.update(user.id, dto);
   }
 

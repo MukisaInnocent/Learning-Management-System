@@ -1,5 +1,13 @@
-import { Controller, Get, Post, Patch, Param, Body, UseGuards } from '@nestjs/common';
-import { Role } from '@prisma/client';
+﻿import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
+import { Role, type User } from '@prisma/client';
 import { StudentsService } from './students.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -13,12 +21,12 @@ export class StudentsController {
 
   @Get()
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN, Role.TEACHER)
-  findAll(@CurrentUser() user: any) {
+  findAll(@CurrentUser() user: User) {
     return this.studentsService.findAll(user.organizationId);
   }
 
   @Get('profile')
-  getMyProfile(@CurrentUser() user: any) {
+  getMyProfile(@CurrentUser() user: User) {
     return this.studentsService.findOne(user.id);
   }
 
@@ -29,13 +37,17 @@ export class StudentsController {
   }
 
   @Patch('profile')
-  updateMyProfile(@CurrentUser() user: any, @Body() dto: any) {
+  updateMyProfile(@CurrentUser() user: User, @Body() dto: any) {
     return this.studentsService.upsertProfile(user.id, dto);
   }
 
   @Post(':studentId/link-parent/:parentId')
   @Roles(Role.SUPER_ADMIN, Role.ORG_ADMIN)
-  linkParent(@Param('studentId') studentId: string, @Param('parentId') parentId: string, @Body('relationship') rel?: string) {
+  linkParent(
+    @Param('studentId') studentId: string,
+    @Param('parentId') parentId: string,
+    @Body('relationship') rel?: string,
+  ) {
     return this.studentsService.linkParent(studentId, parentId, rel);
   }
 }
