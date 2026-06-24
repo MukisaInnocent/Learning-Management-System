@@ -268,11 +268,11 @@ export default function LessonViewerPage() {
         </div>
 
         {/* Quizzes */}
-        {lesson.quizzes?.length > 0 && (
+        {(lesson.quizzes?.length ?? 0) > 0 && (
           <div className="mb-6">
             <h2 className={`mb-3 text-lg font-semibold ${heading}`}>Quizzes</h2>
             <div className="space-y-2">
-              {lesson.quizzes.map((quiz) => (
+              {lesson.quizzes?.map((quiz) => (
                 <button
                   key={quiz.id}
                   type="button"

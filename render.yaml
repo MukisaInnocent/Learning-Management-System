@@ -1,3 +1,15 @@
+# Render Blueprint for the Learning Management System (edu-platform monorepo)
+# Deploy: push to GitHub, then in Render → "New +" → "Blueprint" → pick this repo.
+# Docs: https://render.com/docs/blueprint-spec
+
+databases:
+  # ─── Managed PostgreSQL ───────────────────────────────────────────────────────
+  - name: edu-db
+    databaseName: edu_platform
+    user: edu_admin
+    plan: free
+    region: oregon
+
 services:
   # ─── NestJS API ───────────────────────────────────────────────────────────────
   - type: web
@@ -6,18 +18,24 @@ services:
     region: oregon
     plan: free
     rootDir: apps/api
-    buildCommand: npm install && npm run build
-    startCommand: node dist/main
+    # --include=dev: Render sets NODE_ENV=production, which would otherwise skip
+    # build-time devDependencies (@nestjs/cli, typescript). `npm run build` runs
+    # `prisma generate` then `nest build` (see apps/api/package.json).
+    buildCommand: npm install --include=dev && npm run build
+    # Apply DB migrations on every boot (idempotent), then start the server
+    startCommand: node_modules/.bin/prisma migrate deploy && node dist/main
     healthCheckPath: /api/v1/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false          # set in Render dashboard
+        fromDatabase:
+          name: edu-db
+          property: connectionString   # auto-wired to the managed Postgres above
       - key: JWT_SECRET
-        generateValue: true  # auto-generated secure secret
+        generateValue: true            # auto-generated secure secret
       - key: FRONTEND_URL
-        sync: false          # e.g. https://edu-web.onrender.com
+        sync: false                    # set to the web URL, e.g. https://edu-web.onrender.com
       - key: PORT
         value: 4000
 
@@ -28,20 +46,13 @@ services:
     region: oregon
     plan: free
     rootDir: apps/web
-    buildCommand: npm install && npm run build
+    # --include=dev so Next's build-time devDependencies (typescript, tailwind) install
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_URL
-        sync: false          # e.g. https://edu-api.onrender.com/api/v1
+        sync: false                    # set to the API URL, e.g. https://edu-api.onrender.com/api/v1
       - key: PORT
         value: 3000
-
-# ─── PostgreSQL (managed DB) ──────────────────────────────────────────────────
-# Uncomment to provision a Render Postgres database automatically:
-# databases:
-#   - name: edu-db
-#     databaseName: edu_platform
-#     user: edu_admin
-#     plan: free

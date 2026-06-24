@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 const PUBLIC_PATHS = ['/login', '/register', '/verify-certificate'];
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const accessToken = request.cookies.get('accessToken')?.value;
 
