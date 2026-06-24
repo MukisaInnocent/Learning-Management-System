@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- full-bleed background for maskable — OS clips to its shape -->
+  <rect width="512" height="512" fill="#2563eb"/>
+  <!-- Graduation cap centred in safe zone (inner 80% = 205–307 region) -->
+  <path d="M256 170 L370 225 L256 280 L142 225 Z" fill="white" opacity="0.95"/>
+  <path d="M310 258 L310 325 C310 325 286 355 256 355 C226 355 202 325 202 325 L202 258 L256 282 L310 258 Z" fill="white" opacity="0.85"/>
+  <rect x="360" y="220" width="12" height="58" rx="6" fill="white" opacity="0.7"/>
+  <circle cx="366" cy="286" r="13" fill="white" opacity="0.9"/>
+</svg>
