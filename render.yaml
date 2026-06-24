@@ -33,7 +33,7 @@ services:
     region: oregon
     plan: free
     rootDir: apps/web
-    buildCommand: npm install --include=dev && npm run build
+    buildCommand: (mv ../../package.json ../../_package.json 2>/dev/null || true) && npm install --include=dev && (mv ../../_package.json ../../package.json 2>/dev/null || true) && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
