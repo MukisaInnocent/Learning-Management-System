@@ -8,3 +8,4 @@ build
 coverage
 docs/
 *.tsbuildinfo
+package-lock.json
