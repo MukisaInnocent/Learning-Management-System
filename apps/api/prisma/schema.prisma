@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -633,7 +633,7 @@ model Attendance {
   id        String           @id @default(uuid())
   studentId String
   termId    String
-  date      DateTime         @db.Date
+  date      DateTime
   status    AttendanceStatus @default(PRESENT)
   notes     String?
 
@@ -679,7 +679,7 @@ model FeeStructure {
   organizationId String
   name           String
   billingType    BillingType
-  amount         Decimal     @db.Decimal(12, 2)
+  amount         Float
   description    String?
   active         Boolean     @default(true)
   createdAt      DateTime    @default(now())
@@ -692,7 +692,7 @@ model Invoice {
   organizationId String
   studentId      String?
   invoiceNumber  String        @unique
-  amount         Decimal       @db.Decimal(12, 2)
+  amount         Float
   status         InvoiceStatus @default(DRAFT)
   dueDate        DateTime?
   notes          String?
@@ -710,7 +710,7 @@ model InvoiceItem {
   invoiceId   String
   description String
   quantity    Int     @default(1)
-  amount      Decimal @db.Decimal(12, 2)
+  amount      Float
 
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }
@@ -718,7 +718,7 @@ model InvoiceItem {
 model Payment {
   id              String        @id @default(uuid())
   invoiceId       String
-  amount          Decimal       @db.Decimal(12, 2)
+  amount          Float
   referenceNumber String?
   method          PaymentMethod @default(CASH)
   paidAt          DateTime      @default(now())
@@ -744,7 +744,7 @@ model Discount {
   organizationId String
   name           String
   percentage     Float?
-  fixedAmount    Decimal? @db.Decimal(12, 2)
+  fixedAmount    Float?
   active         Boolean  @default(true)
   createdAt      DateTime @default(now())
 

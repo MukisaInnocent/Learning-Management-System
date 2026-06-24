@@ -1,14 +1,6 @@
-# Render Blueprint for the Learning Management System (edu-platform monorepo)
-# Deploy: push to GitHub, then in Render → "New +" → "Blueprint" → pick this repo.
-# Docs: https://render.com/docs/blueprint-spec
-
-databases:
-  # ─── Managed PostgreSQL ───────────────────────────────────────────────────────
-  - name: edu-db
-    databaseName: edu_platform
-    user: edu_admin
-    plan: free
-    region: oregon
+# Render Blueprint — Learning Management System (SQLite / testing mode)
+# Deploy: push to GitHub → Render dashboard → "New +" → "Blueprint" → pick this repo.
+# NOTE: SQLite is ephemeral on Render (data resets on redeploy). Switch to PostgreSQL for production.
 
 services:
   # ─── NestJS API ───────────────────────────────────────────────────────────────
@@ -18,24 +10,19 @@ services:
     region: oregon
     plan: free
     rootDir: apps/api
-    # --include=dev: Render sets NODE_ENV=production, which would otherwise skip
-    # build-time devDependencies (@nestjs/cli, typescript). `npm run build` runs
-    # `prisma generate` then `nest build` (see apps/api/package.json).
     buildCommand: npm install --include=dev && npm run build
-    # Apply DB migrations on every boot (idempotent), then start the server
-    startCommand: node_modules/.bin/prisma migrate deploy && node dist/main
+    # prisma db push creates/syncs the SQLite schema on every boot
+    startCommand: node_modules/.bin/prisma db push --accept-data-loss && node dist/main
     healthCheckPath: /api/v1/health
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: edu-db
-          property: connectionString   # auto-wired to the managed Postgres above
+        value: file:./dev.db
       - key: JWT_SECRET
-        generateValue: true            # auto-generated secure secret
+        generateValue: true
       - key: FRONTEND_URL
-        sync: false                    # set to the web URL, e.g. https://edu-web.onrender.com
+        sync: false          # set to your web URL, e.g. https://edu-web.onrender.com
       - key: PORT
         value: 4000
 
@@ -46,13 +33,12 @@ services:
     region: oregon
     plan: free
     rootDir: apps/web
-    # --include=dev so Next's build-time devDependencies (typescript, tailwind) install
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_URL
-        sync: false                    # set to the API URL, e.g. https://edu-api.onrender.com/api/v1
+        sync: false          # set to your API URL, e.g. https://edu-api.onrender.com/api/v1
       - key: PORT
         value: 3000
