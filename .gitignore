@@ -9,3 +9,5 @@ coverage
 docs/
 *.tsbuildinfo
 package-lock.json
+*.db
+*.db-journal
